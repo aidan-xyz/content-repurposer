@@ -35,8 +35,24 @@ def allowed_file(filename):
 
 def extract_audio(video_path, audio_path):
     """Extract audio from video using FFmpeg"""
+    # Try to find ffmpeg in common locations
+    ffmpeg_cmd = 'ffmpeg'
+    possible_paths = [
+        '/usr/bin/ffmpeg',
+        '/usr/local/bin/ffmpeg',
+        'ffmpeg'
+    ]
+    
+    for path in possible_paths:
+        try:
+            subprocess.run([path, '-version'], capture_output=True, check=True)
+            ffmpeg_cmd = path
+            break
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            continue
+    
     command = [
-        'ffmpeg', '-i', video_path,
+        ffmpeg_cmd, '-i', video_path,
         '-vn', '-acodec', 'libmp3lame',
         '-q:a', '2', audio_path, '-y'
     ]
