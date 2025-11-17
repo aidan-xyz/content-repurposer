@@ -15,4 +15,4 @@ RUN mkdir -p uploads
 
 EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "300", "--graceful-timeout", "300", "--workers", "1", "--log-level", "info", "app:app"]
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "app:app"]
