@@ -75,34 +75,44 @@ def format_for_platform(transcript, platform):
     client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
     
     prompts = {
-        'linkedin': """Convert this transcript into a LinkedIn post. Use this style:
-- Start with a strong hook
-- Short paragraphs (1-2 sentences each)
-- Use bullet points where appropriate
-- End with an engaging question
+        'linkedin': """Convert this transcript into a LinkedIn post.
+
+Rules:
+- NO markdown formatting (no **, no #, no formatting symbols)
+- Stay very close to the original transcript's content and ideas
+- Use short paragraphs (1-2 sentences each)
+- Use simple dashes for bullet points if needed
 - Professional but authentic tone
-- Keep it conversational
+- Keep it conversational and direct
+- End with an engaging question
 
 Transcript: {transcript}""",
         
-        'twitter': """Convert this transcript into a Twitter thread. Use this style:
+        'twitter': """Convert this transcript into a single Twitter post (not a thread - Twitter allows longer posts now).
+
+Rules:
+- NO markdown formatting (no **, no #, no formatting symbols)
+- Stay very close to the original transcript's content and ideas
 - Punchy and direct
-- Each tweet should be under 280 characters
 - Use line breaks for readability
-- No hashtags unless absolutely necessary
-- Start strong
-
-Format as a thread with tweet numbers.
+- Use simple dashes for bullet points if needed
+- Keep the same vibe as the transcript
+- Start strong with a hook
 
 Transcript: {transcript}""",
         
-        'blog': """Convert this transcript into a blog post. Use this style:
-- Clear H2 headings for sections
+        'blog': """Convert this transcript into a blog post.
+
+Rules:
+- NO markdown formatting (no **, no #, no formatting symbols)
+- Stay very close to the original transcript's content and ideas
+- Use plain text headings (not markdown H2/H3)
 - Medium-length paragraphs
-- Expand on ideas from the transcript
-- Professional but conversational
-- Add context where needed
-- No fluff
+- Professional but conversational tone matching the transcript
+- Expand on ideas naturally from the transcript
+- Add context where needed but stay true to the original message
+- End with a thought-provoking question
+- No fluff or filler
 
 Transcript: {transcript}"""
     }
