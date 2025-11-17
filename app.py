@@ -80,6 +80,7 @@ def format_for_platform(transcript, platform):
 Rules:
 - NO markdown formatting (no **, no #, no formatting symbols)
 - Stay very close to the original transcript's content and ideas
+- Start with a single strong hook line
 - Use short paragraphs (1-2 sentences each)
 - Use simple dashes for bullet points if needed
 - Professional but authentic tone
@@ -107,14 +108,23 @@ Rules:
 - NO markdown formatting (no **, no #, no formatting symbols)
 - Stay very close to the original transcript's content and ideas
 - Use plain text section headings (simple, punchy)
-- Short, punchy paragraphs - avoid being wordy
+- Organize into clear sections with SHORT paragraphs (2-4 sentences)
+- Use single sentence paragraphs SPARINGLY for emphasis - not for everything
 - Professional but conversational tone matching the transcript
-- Use single sentences as paragraphs when it hits harder
 - Be direct and to the point - no fluff
 - Can end with a thought-provoking question
 - Write like you're talking to a friend who's smart
 
-Style reference: Tight, punchy, conversational. Think Substack, not corporate blog.
+Example structure:
+Section Heading
+Regular paragraph with 2-4 sentences explaining a point.
+
+Maybe a single sentence for emphasis.
+
+Another paragraph continuing the idea.
+
+Next Section
+And so on.
 
 Transcript: {transcript}"""
     }
