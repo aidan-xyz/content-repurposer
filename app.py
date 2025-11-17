@@ -84,7 +84,7 @@ Rules:
 - Use simple dashes for bullet points if needed
 - Professional but authentic tone
 - Keep it conversational and direct
-- End with an engaging question
+- DO NOT end with a question or CTA - just end naturally
 
 Transcript: {transcript}""",
         
@@ -101,18 +101,20 @@ Rules:
 
 Transcript: {transcript}""",
         
-        'blog': """Convert this transcript into a blog post.
+        'blog': """Convert this transcript into a blog post in a Substack style.
 
 Rules:
 - NO markdown formatting (no **, no #, no formatting symbols)
 - Stay very close to the original transcript's content and ideas
-- Use plain text headings (not markdown H2/H3)
-- Medium-length paragraphs
+- Use plain text section headings (simple, punchy)
+- Short, punchy paragraphs - avoid being wordy
 - Professional but conversational tone matching the transcript
-- Expand on ideas naturally from the transcript
-- Add context where needed but stay true to the original message
-- End with a thought-provoking question
-- No fluff or filler
+- Use single sentences as paragraphs when it hits harder
+- Be direct and to the point - no fluff
+- Can end with a thought-provoking question
+- Write like you're talking to a friend who's smart
+
+Style reference: Tight, punchy, conversational. Think Substack, not corporate blog.
 
 Transcript: {transcript}"""
     }
