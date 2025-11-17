@@ -1,6 +1,6 @@
 Flask==3.0.0
 Flask-HTTPAuth==4.8.0
-anthropic==0.40.0
-openai==1.54.3
+anthropic==0.73.0
+openai==2.8.0
 Werkzeug==3.0.1
 gunicorn==21.2.0
