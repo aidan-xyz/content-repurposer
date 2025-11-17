@@ -126,38 +126,50 @@ def index():
 @auth.login_required
 def process_video():
     if 'video' not in request.files:
+        print("ERROR: No video file in request")
         return jsonify({'error': 'No video file provided'}), 400
     
     file = request.files['video']
     
     if file.filename == '':
+        print("ERROR: Empty filename")
         return jsonify({'error': 'No file selected'}), 400
     
     if not allowed_file(file.filename):
+        print(f"ERROR: Invalid file type: {file.filename}")
         return jsonify({'error': 'Invalid file type. Please upload MP4, MOV, AVI, or MKV'}), 400
     
     try:
         # Save uploaded video
         filename = secure_filename(file.filename)
         video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        print(f"Saving video to: {video_path}")
         file.save(video_path)
         
         # Extract audio
         audio_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}_audio.mp3")
+        print(f"Extracting audio to: {audio_path}")
         extract_audio(video_path, audio_path)
         
         # Transcribe
+        print("Starting transcription...")
         transcript = transcribe_audio(audio_path)
+        print(f"Transcription complete: {len(transcript)} characters")
         
         # Format for each platform
+        print("Formatting for LinkedIn...")
         linkedin_post = format_for_platform(transcript, 'linkedin')
+        print("Formatting for Twitter...")
         twitter_thread = format_for_platform(transcript, 'twitter')
+        print("Formatting for blog...")
         blog_post = format_for_platform(transcript, 'blog')
         
         # Clean up files
+        print("Cleaning up temporary files...")
         os.remove(video_path)
         os.remove(audio_path)
         
+        print("SUCCESS: All processing complete")
         return jsonify({
             'transcript': transcript,
             'linkedin': linkedin_post,
@@ -166,7 +178,15 @@ def process_video():
         })
     
     except Exception as e:
+        print(f"ERROR: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    print("Starting Flask app...")
+    print(f"ANTHROPIC_API_KEY set: {bool(os.environ.get('ANTHROPIC_API_KEY'))}")
+    print(f"OPENAI_API_KEY set: {bool(os.environ.get('OPENAI_API_KEY'))}")
+    print(f"AUTH_USERNAME set: {bool(os.environ.get('AUTH_USERNAME'))}")
+    print(f"AUTH_PASSWORD set: {bool(os.environ.get('AUTH_PASSWORD'))}")
     app.run(debug=True, host='0.0.0.0', port=5000)
