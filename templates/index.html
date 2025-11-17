@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Repurposer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="mb-12">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Content Repurposer</h1>
+            <p class="text-gray-600">Upload your reel, get LinkedIn, Twitter, and blog posts.</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Video File
+                    </label>
+                    <input 
+                        type="file" 
+                        id="videoFile" 
+                        name="video"
+                        accept="video/*"
+                        class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-medium
+                        file:bg-gray-900 file:text-white
+                        hover:file:bg-gray-800
+                        cursor-pointer"
+                        required
+                    >
+                </div>
+                <button 
+                    type="submit"
+                    id="processBtn"
+                    class="w-full bg-gray-900 text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    Process Video
+                </button>
+            </form>
+
+            <!-- Loading State -->
+            <div id="loading" class="hidden mt-6 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <p class="mt-2 text-sm text-gray-600">Processing your video...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p class="text-sm text-red-800"></p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden space-y-6">
+            <!-- Transcript -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Transcript</h2>
+                    <button onclick="copyToClipboard('transcript')" class="text-sm text-gray-600 hover:text-gray-900">
+                        Copy
+                    </button>
+                </div>
+                <textarea 
+                    id="transcript" 
+                    readonly 
+                    class="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 font-mono resize-none"
+                ></textarea>
+            </div>
+
+            <!-- LinkedIn -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">LinkedIn Post</h2>
+                    <button onclick="copyToClipboard('linkedin')" class="text-sm text-gray-600 hover:text-gray-900">
+                        Copy
+                    </button>
+                </div>
+                <textarea 
+                    id="linkedin" 
+                    readonly 
+                    class="w-full h-64 p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 resize-none"
+                ></textarea>
+            </div>
+
+            <!-- Twitter -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Twitter Thread</h2>
+                    <button onclick="copyToClipboard('twitter')" class="text-sm text-gray-600 hover:text-gray-900">
+                        Copy
+                    </button>
+                </div>
+                <textarea 
+                    id="twitter" 
+                    readonly 
+                    class="w-full h-64 p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 resize-none"
+                ></textarea>
+            </div>
+
+            <!-- Blog -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Blog Post</h2>
+                    <button onclick="copyToClipboard('blog')" class="text-sm text-gray-600 hover:text-gray-900">
+                        Copy
+                    </button>
+                </div>
+                <textarea 
+                    id="blog" 
+                    readonly 
+                    class="w-full h-96 p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 resize-none"
+                ></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+        const processBtn = document.getElementById('processBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const file = document.getElementById('videoFile').files[0];
+            
+            if (!file) {
+                showError('Please select a video file');
+                return;
+            }
+
+            // Show loading, hide error and results
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            results.classList.add('hidden');
+            processBtn.disabled = true;
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Something went wrong');
+                }
+
+                // Populate results
+                document.getElementById('transcript').value = data.transcript;
+                document.getElementById('linkedin').value = data.linkedin;
+                document.getElementById('twitter').value = data.twitter;
+                document.getElementById('blog').value = data.blog;
+
+                // Show results
+                results.classList.remove('hidden');
+                loading.classList.add('hidden');
+
+            } catch (err) {
+                showError(err.message);
+                loading.classList.add('hidden');
+            } finally {
+                processBtn.disabled = false;
+            }
+        });
+
+        function showError(message) {
+            error.querySelector('p').textContent = message;
+            error.classList.remove('hidden');
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            
+            // Visual feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
