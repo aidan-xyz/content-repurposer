@@ -71,6 +71,7 @@ def transcribe_audio(audio_path):
 
 def format_for_platform(transcript, platform):
     """Use Claude to format transcript for specific platform"""
+    print(f"Creating Anthropic client for {platform}...")
     client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
     
     prompts = {
@@ -106,16 +107,22 @@ Transcript: {transcript}""",
 Transcript: {transcript}"""
     }
     
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2000,
-        messages=[{
-            "role": "user",
-            "content": prompts[platform].format(transcript=transcript)
-        }]
-    )
-    
-    return message.content[0].text
+    print(f"Sending request to Claude for {platform}...")
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
+            messages=[{
+                "role": "user",
+                "content": prompts[platform].format(transcript=transcript)
+            }],
+            timeout=120.0
+        )
+        print(f"Received response from Claude for {platform}")
+        return message.content[0].text
+    except Exception as e:
+        print(f"ERROR in format_for_platform({platform}): {type(e).__name__}: {str(e)}")
+        raise
 
 @app.route('/')
 @auth.login_required
@@ -156,26 +163,43 @@ def process_video():
         transcript = transcribe_audio(audio_path)
         print(f"Transcription complete: {len(transcript)} characters")
         
-        # Format for each platform
-        print("Formatting for LinkedIn...")
-        linkedin_post = format_for_platform(transcript, 'linkedin')
-        print("Formatting for Twitter...")
-        twitter_thread = format_for_platform(transcript, 'twitter')
-        print("Formatting for blog...")
-        blog_post = format_for_platform(transcript, 'blog')
-        
-        # Clean up files
+        # Clean up files immediately
         print("Cleaning up temporary files...")
         os.remove(video_path)
         os.remove(audio_path)
         
-        print("SUCCESS: All processing complete")
+        # Return transcript immediately
+        print("SUCCESS: Transcription complete, returning to client")
         return jsonify({
-            'transcript': transcript,
-            'linkedin': linkedin_post,
-            'twitter': twitter_thread,
-            'blog': blog_post
+            'transcript': transcript
         })
+    
+    except Exception as e:
+        print(f"ERROR: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/format', methods=['POST'])
+@auth.login_required
+def format_content():
+    """Format transcript for specific platforms"""
+    data = request.get_json()
+    
+    if not data or 'transcript' not in data:
+        return jsonify({'error': 'No transcript provided'}), 400
+    
+    transcript = data['transcript']
+    platforms = data.get('platforms', ['linkedin', 'twitter', 'blog'])
+    
+    try:
+        results = {}
+        for platform in platforms:
+            print(f"Formatting for {platform}...")
+            results[platform] = format_for_platform(transcript, platform)
+            print(f"Completed {platform}")
+        
+        return jsonify(results)
     
     except Exception as e:
         print(f"ERROR: {type(e).__name__}: {str(e)}")

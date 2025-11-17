@@ -153,6 +153,8 @@
             processBtn.disabled = true;
 
             try {
+                // Step 1: Upload and transcribe
+                loading.querySelector('p').textContent = 'Processing video and transcribing...';
                 const response = await fetch('/process', {
                     method: 'POST',
                     body: formData
@@ -164,14 +166,36 @@
                     throw new Error(data.error || 'Something went wrong');
                 }
 
-                // Populate results
+                // Show transcript
                 document.getElementById('transcript').value = data.transcript;
-                document.getElementById('linkedin').value = data.linkedin;
-                document.getElementById('twitter').value = data.twitter;
-                document.getElementById('blog').value = data.blog;
-
-                // Show results
                 results.classList.remove('hidden');
+
+                // Step 2: Format for platforms
+                loading.querySelector('p').textContent = 'Formatting for LinkedIn, Twitter, and blog...';
+                
+                const formatResponse = await fetch('/format', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        transcript: data.transcript,
+                        platforms: ['linkedin', 'twitter', 'blog']
+                    })
+                });
+
+                const formatted = await formatResponse.json();
+
+                if (!formatResponse.ok) {
+                    throw new Error(formatted.error || 'Formatting failed');
+                }
+
+                // Populate formatted content
+                document.getElementById('linkedin').value = formatted.linkedin || 'Processing...';
+                document.getElementById('twitter').value = formatted.twitter || 'Processing...';
+                document.getElementById('blog').value = formatted.blog || 'Processing...';
+
+                // Hide loading
                 loading.classList.add('hidden');
 
             } catch (err) {
