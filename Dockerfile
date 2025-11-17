@@ -13,6 +13,6 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads
 
-EXPOSE 5000
+EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "300", "--workers", "1", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "300", "--workers", "1", "app:app"]
